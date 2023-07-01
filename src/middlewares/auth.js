@@ -1,10 +1,11 @@
 const jwt = require('jsonwebtoken');
+const { SECRET_KEY } = require('../../config')
 
 
 const auth = (req, res, next) => {
     try {
         const token = req.headers['x-api-key'];
-        if(token === undefined && token.trim()=='') {
+        if(token === undefined) {
             res.status(401).json({ status: false, message: 'Invalid token' });
         }
         const decoded = jwt.verify(token, SECRET_KEY);

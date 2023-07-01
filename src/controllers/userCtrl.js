@@ -9,38 +9,41 @@ const { ObjectIdCheck } = require('../utils/validations');
 
 const userCreate = async (req, res) => {
     try {
-        const file = req.files
-        const { fname, lname, phone, email, password, address } = req.body;
-        if (!fname || !lname || !phone || !email || !password || !address) {
+        const files = req.files
+        const { fname, lname, phone, email, password, address, profileImage } = req.body;
+        // console.log(req.body)
+        if (!fname || !lname || !phone || !email || !password) {
             res.status(400).json({ status: false, message: 'Please enter all fields' });
         }
         if (phone.length != 10) {
             res.status(400).json({ status: false, message: 'Please enter valid phone number' });
         }
-        if (validator.isEmail(email)) {
+        if (!validator.isEmail(email)) {
             res.status(400).json({ status: false, message: 'Please enter valid email' });
         }
         if (password.length < 8 || password.length > 15) {
             res.status(400).json({ status: false, message: 'Please enter valid password' });
         }
-        if (!address.shipping && !address.billing) {
+        // if (!address.shipping && !address.billing) {
+        //     res.status(400).json({ status: false, message: 'Please enter address' });
+        // }
+        if (!address.shipping.street || !address.billing.street) {
             res.status(400).json({ status: false, message: 'Please enter address' });
         }
-        if (!address.shipping.street && !address.billing.street) {
+        if (!address.shipping.city || !address.billing.city) {
             res.status(400).json({ status: false, message: 'Please enter address' });
         }
-        if (!address.shipping.city && !address.billing.city) {
+
+        if (!address.shipping.pincode || !address.billing.pincode) {
             res.status(400).json({ status: false, message: 'Please enter address' });
         }
-        if (!address.shipping.pincode && !address.billing.pincode) {
-            res.status(400).json({ status: false, message: 'Please enter address' });
-        }
-        if (file.length === 0) {
+        if (files.length === 0) {
             res.status(400).json({ status: false, message: 'Please upload profile image' });
         }
         else {
             const phoneCheck = await userModel.findOne({ phone: phone });
             const emailCheck = await userModel.findOne({ email: email });
+            const url = await uploadFiles(files[0]);
             if (phoneCheck) {
                 res.status(400).json({ status: false, message: 'Phone number already exists' });
             }
@@ -49,13 +52,14 @@ const userCreate = async (req, res) => {
             }
             const salt = await bcrypt.genSalt();
             const hashedPassword = await bcrypt.hash(password, salt);
-            const url = await uploadFiles(file[0]);
+
             const userDetail = {
                 fname: fname,
                 lname: lname,
                 phone: phone,
                 email: email,
                 password: hashedPassword,
+                // address : address,
                 address: {
                     shipping: {
                         street: address.shipping.street,
@@ -72,7 +76,7 @@ const userCreate = async (req, res) => {
             }
 
             const user = await userModel.create(userDetail);
-            res.status(200).json({ status: true, message: 'User created successfully', data: user });
+            res.status(201).json({ status: true, message: 'User created successfully', data: user });
         }
     } catch (error) {
         if (error.message.includes('duplicate')) {
@@ -102,7 +106,7 @@ const userLogin = async (req, res) => {
         if (!isMatch) {
             res.status(400).json({ status: false, message: 'Invalid email or password' });
         }
-        const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '24h' });
+        const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '24h' });
         if (token === undefined) {
             res.status(400).json({ status: false, message: 'Invalid token' });
         }
@@ -151,7 +155,10 @@ const getUserById = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const userId = req.params.userId;
-        const data = req.body;
+        let data = req.body;
+        if (!data) {
+            return res.status(400).json({ status: false, message: 'Please enter data' });
+        }
         if (!userId) {
             res.status(400).json({ status: false, message: 'Please enter user id' });
         }
@@ -181,33 +188,36 @@ const updateUser = async (req, res) => {
             if (data.password.length < 8 || data.password.length > 15) {
                 res.status(400).json({ status: false, message: 'Please enter valid password' });
             }
-
+            const salt = await bcrypt.genSalt();
+            const hashedPassword = await bcrypt.hash(data.password, salt);
+            data.password = hashedPassword
         }
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(data.password, salt);
-        const url = await uploadFiles(req.files[0]);
-        const userDetail = {
-            fname: data.fname,
-            lname: data.lname,
-            phone: data.phone,
-            email: data.email,
-            password: hashedPassword,
-            address: {
-                shipping: {
-                    street: data.address.shipping.street,
-                    city: data.address.shipping.city,
-                    pincode: data.address.shipping.pincode
-                },
-                billing: {
-                    street: data.address.billing.street,
-                    city: data.address.billing.city,
-                    pincode: data.address.billing.pincode
-                }
-            },
-            profileImage: url
-        }
-        await userModel.findByIdAndUpdate(userId, { $set: userDetail }, { new: true });
-        res.status(200).json({ status: true, message: 'User updated successfully', data: user });
+        // if (req.files.length > 0|| req.files) {
+        //     const url = await uploadFiles(req.files[0]);
+        //     data.profileImage = url
+        // }
+        // const userDetail = {
+        //     fname: data.fname,
+        //     lname: data.lname,
+        //     phone: data.phone,
+        //     email: data.email,
+        //     password: hashedPassword,
+        //     address: {
+        //         shipping: {
+        //             street: data.address.shipping.street,
+        //             city: data.address.shipping.city,
+        //             pincode: data.address.shipping.pincode
+        //         },
+        //         billing: {
+        //             street: data.address.billing.street,
+        //             city: data.address.billing.city,
+        //             pincode: data.address.billing.pincode
+        //         }
+        //     },
+        //     profileImage: url
+        // }
+        let updateUser2 = await userModel.findByIdAndUpdate(userId, {$set : req.body}, { new: true });
+        res.status(200).json({ status: true, message: 'User updated successfully', data: updateUser2 });
     } catch (error) {
         res.status(500).json({ status: false, message: error.message });
     }

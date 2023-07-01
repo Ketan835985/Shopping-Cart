@@ -15,6 +15,9 @@ const createProduct = async (req, res) => {
         if (product) {
             res.status(400).json({ status: false, message: 'Product Title already exists' });
         }
+        if(availableSizes.length === 0){
+            res.status(400).json({ status: false, message: 'Please enter valid sizes' });
+        }
         if(! sizeCheck(availableSizes)){
             res.status(400).json({ status: false, message: 'Please enter valid sizes' });
         }
@@ -32,8 +35,21 @@ const createProduct = async (req, res) => {
         }
         const url = await uploadFiles(files[0]);
         productImage = url;
-
+        const productDetail = {
+            title : title,
+            description : description,
+            price : price,
+            currencyId : currencyId,
+            currencyFormat : currencyFormat,
+            isFreeShipping : isFreeShipping,
+            productImage : productImage,
+            style : style,
+            availableSizes : availableSizes,
+            installments : installments
+        }
         
+        const newProduct = await productModel.create(productDetail);
+        res.status(200).json({ status: true, message: 'Product Created', data: newProduct });
     } catch (error) {
         if (error.message.includes('duplicate')) {
             res.status(400).json({ status: false, message: error.message });
@@ -45,4 +61,17 @@ const createProduct = async (req, res) => {
             res.status(500).json({ status: false, message: error.message });
         }
     }
+}
+
+const getProduct = async (req, res) => {
+    try {
+        
+    } catch (error) {
+        res.status(500).json({ status: false, message: error.message });
+    }
+}
+
+
+module.exports = {
+    createProduct
 }

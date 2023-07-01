@@ -1,13 +1,13 @@
 
 
 function sizeCheck (str){
-    const size = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-    if(size.includes(str)){
-        return true
+    const arr = ["S", "XS", "M", "X", "L", "XXL", "XL"]
+    for(let i = 0; i<str.length; i++){
+        if(!arr.includes(str[i])){
+            return false
+        }
     }
-    else{
-        return false
-    }
+    return true
 }
 
 module.exports = { sizeCheck }
