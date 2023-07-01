@@ -104,7 +104,7 @@ const userLogin = async (req, res) => {
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            res.status(400).json({ status: false, message: 'Invalid email or password' });
+            res.status(400).json({ status: false, message: 'Invalid password' });
         }
         const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '24h' });
         if (token === undefined) {
@@ -177,11 +177,17 @@ const updateUser = async (req, res) => {
             if (emailCheck) {
                 res.status(400).json({ status: false, message: 'Email already exists' });
             }
+            if(!validator.isEmail(data.email)){
+                return res.status(400).json({status:false, message: 'Please enter valid email'})
+            }
         }
         if (data.phone) {
             const phoneCheck = await userModel.findOne({ phone: data.phone });
             if (phoneCheck) {
                 res.status(400).json({ status: false, message: 'Phone number already exists' });
+            }
+            if((data.phone).length!=10){
+                return res.status(400).json({status:false, message: 'Please enter valid phone number'})
             }
         }
         if (data.password) {
@@ -192,30 +198,6 @@ const updateUser = async (req, res) => {
             const hashedPassword = await bcrypt.hash(data.password, salt);
             data.password = hashedPassword
         }
-        // if (req.files.length > 0|| req.files) {
-        //     const url = await uploadFiles(req.files[0]);
-        //     data.profileImage = url
-        // }
-        // const userDetail = {
-        //     fname: data.fname,
-        //     lname: data.lname,
-        //     phone: data.phone,
-        //     email: data.email,
-        //     password: hashedPassword,
-        //     address: {
-        //         shipping: {
-        //             street: data.address.shipping.street,
-        //             city: data.address.shipping.city,
-        //             pincode: data.address.shipping.pincode
-        //         },
-        //         billing: {
-        //             street: data.address.billing.street,
-        //             city: data.address.billing.city,
-        //             pincode: data.address.billing.pincode
-        //         }
-        //     },
-        //     profileImage: url
-        // }
         let updateUser2 = await userModel.findByIdAndUpdate(userId, {$set : req.body}, { new: true });
         res.status(200).json({ status: true, message: 'User updated successfully', data: updateUser2 });
     } catch (error) {
