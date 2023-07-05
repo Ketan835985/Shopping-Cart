@@ -82,7 +82,7 @@ const getProduct = async (req, res) => {
         }
         let sortOption = {};
         if (priceSort) {
-            sortOption.price = parseInt(priceSort);
+            sortOption.price = JSON.parse(parseInt(priceSort));
         }
         const products = await productModel.find(filterDetail).sort(sortOption);
         res.status(200).json({ status: true, message: 'Products found', data: products });
