@@ -1,7 +1,7 @@
-const { isValidObjectId } = require('mongoose');
 const { uploadFiles } = require('../aws/aws');
 const productModel = require('../models/productModel');
 const { sizeCheck } = require('../utils/proValidation');
+const {ObjectIdCheck} = require('../utils/validations');
 
 
 
@@ -99,7 +99,7 @@ const getProductById = async (req, res) => {
         if(!productId){
             return res.status(400).json({status:false, message: 'ProductId not found' });
         }
-        if(! isValidObjectId(productId)){
+        if(! ObjectIdCheck(productId)){
             return res.status(400).json({status: false, message: 'Invalid productId' });
         }
         const product = await productModel.findOne({_id:productId, isDeleted: false}); 
@@ -119,7 +119,7 @@ const updateProduct = async (req, res) => {
         if(!productId){
             return res.status(400).json({status:false, message: 'ProductId not found' });
         }
-        if(! isValidObjectId(productId)){
+        if(! ObjectIdCheck(productId)){
             return res.status(400).json({status: false, message: 'Invalid productId' });
         }
         const product = await productModel.findOne({_id: productId, isDeleted: false});
@@ -167,7 +167,7 @@ const deletedProduct = async (req, res) => {
         if(!productId){
             return res.status(400).json({status:false, message: 'ProductId not found' });
         }
-        if(! isValidObjectId(productId)){
+        if(! ObjectIdCheck(productId)){
             return res.status(400).json({status: false, message: 'Invalid productId' });
         }
         const product = await productModel.findOne({_id:productId, isDeleted: false});
