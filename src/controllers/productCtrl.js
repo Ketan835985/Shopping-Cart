@@ -50,7 +50,7 @@ const createProduct = async (req, res) => {
         }
 
         const newProduct = await productModel.create(productDetail);
-       return res.status(200).json({ status: true, message: 'Product Created', data: newProduct });
+       return res.status(201).json({ status: true, message: 'Product Created', data: newProduct });
     } catch (error) {
         if (error.message.includes('duplicate')) {
             return res.status(400).json({ status: false, message: error.message });
@@ -85,6 +85,9 @@ const getProduct = async (req, res) => {
             sortOption.price = JSON.parse(parseInt(priceSort));
         }
         const products = await productModel.find(filterDetail).sort(sortOption);
+        if(products.length ==0){
+            return res.status(404).json({ status: false, message: 'Products not found' });
+        }
         res.status(200).json({ status: true, message: 'Products found', data: products });
     } catch (error) {
         res.status(500).json({ status: false, message: error.message });
@@ -119,11 +122,11 @@ const updateProduct = async (req, res) => {
         if(! isValidObjectId(productId)){
             return res.status(400).json({status: false, message: 'Invalid productId' });
         }
-        const product = await productModel.findById(productId);
+        const product = await productModel.findOne({_id: productId, isDeleted: false});
         if(! product){
             return res.status(404).json({status: false, message: 'Product not found' });
         }
-        if(!req.body){
+        if(!req.body||( Object.keys(req.body)).length == 0){
             return res.status(400).json({status: false, message: 'Please enter data' });
         }
         if(productImage){
