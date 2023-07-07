@@ -65,6 +65,16 @@ const createCart = async (req, res) => {
                         return res.status(200).json({ status: true, message: "Product updated", data: val });
                     }
                 }
+                else {
+                    cart.items.push({
+                        productId: productId,
+                        quantity: 1
+                    })
+                    cart.totalItems = 1;
+                    cart.totalPrice = product.price;
+                    const val = await cart.save();
+                    return res.status(200).json({ status: true, message: "Product updated", data: val });
+                }
             }
             else {
 
@@ -88,6 +98,16 @@ const createCart = async (req, res) => {
                         const val = await cartByUser.save();
                         return res.status(200).json({ status: true, message: "Product updated", data: val });
                     }
+                }
+                else {
+                    cartByUser.items.push({
+                        productId: productId,
+                        quantity: 1
+                    })
+                    cartByUser.totalItems = 1;
+                    cartByUser.totalPrice = product.price;
+                    const val = await cartByUser.save();
+                    return res.status(200).json({ status: true, message: "Product updated", data: val });
                 }
             }
         }
@@ -122,14 +142,11 @@ const updateCart = async (req, res) => {
     try {
         const userId = req.params.userId;
         const { cartId, productId, removeProduct } = req.body
-        if (!userId || !cartId || !productId) {
+        if (!userId || !productId) {
             return res.status(400).json({ status: false, message: 'Please enter data' });
         }
         if (!ObjectIdCheck(userId)) {
             return res.status(400).json({ status: false, message: 'Invalid userId' });
-        }
-        if (!ObjectIdCheck(cartId)) {
-            return res.status(400).json({ status: false, message: 'Invalid cartId' });
         }
         if (!ObjectIdCheck(productId)) {
             return res.status(400).json({ status: false, message: 'Invalid productId' });
@@ -142,21 +159,62 @@ const updateCart = async (req, res) => {
         if (!product) {
             return res.status(404).json({ status: false, message: 'Product not found' });
         }
-        const cart = await cartModel.findOne({ _id: cartId, isDeleted: false });
-        if (!cart) {
-            return res.status(404).json({ status: false, message: 'Cart not found' });
-        }
-        if (userId.toString !== String(req.userId)) {
+        if (userId.toString() !== String(req.userId)) {
             return res.status(401).json({ status: false, message: 'Unauthorized' });
         }
+
+        if (cartId) {
+            if (!ObjectIdCheck(cartId)) {
+                return res.status(400).json({ status: false, message: 'Invalid cartId' });
+            }
+            const cart = await cartModel.findOne({ _id: cartId, isDeleted: false });
+            if (!cart) {
+                return res.status(404).json({ status: false, message: 'Cart not found' });
+            }
+            if (String(cart.userId) !== userId.toString()) {
+                return res.status(401).json({ status: false, message: 'Unauthorized' });
+            }
+        }
+
+        let cart = await cartModel.findOne({ userId: userId, });
+
         if (removeProduct) {
-            cart.items = cart.items.filter(item => item.productId.toString() !== productId.toString())
-            cart.totalItems -= 1;
-            cart.totalPrice -= product.price;
+            if (cart.items.length > 0) {
+                let proCheck = (cart.items).find(x => (x.productId).toString() === (productId).toString());
+                if (proCheck !== undefined) {
+                    cart.items = (cart.items).filter(item => item.productId.toString() !== productId.toString())
+                    cart.totalItems -= 1;
+                    cart.totalPrice -= product.price;
+                    const val = await cart.save();
+                    const updatedCart = await cartModel.findById(cartId).lean();
+                    updateCart.removeProduct = updatedCart.removeProduct + 1;
+                    return res.status(200).json({ status: true, message: "Product updated", data: updatedCart });
+                }
+                else {
+                    return res.status(400).json({ status: false, message: "Product does not exist" });
+                }
+            }
+            return res.status(200).json({ status: true, message: "Product updated", data: cart });
+        }
+        else {
+            if (cart.items.length > 0) {
+                let proCheck = (cart.items).find(x => (x.productId).toString() === (productId).toString());
+                if (proCheck !== undefined) {
+                    cart.items = (cart.items).filter(item => item.productId.toString() !== productId.toString())
+                    cart.totalItems -= 1;
+                    cart.totalPrice -= product.price;
+                    const val = await cart.save();
+                    val.removeProduct = 1;
+                    return res.status(200).json({ status: true, message: "Product updated", data: val });
+                }
+                else {
+                    return res.status(400).json({ status: false, message: "Product does not exist" });
+                }
+            }
+            cart.totalItems = 0;
+            cart.totalPrice = 0;
             const val = await cart.save();
-            const updatedCart = await cartModel.findById(cartId).lean();
-            updateCart.removeProduct = updatedCart.removeProduct + 1;
-            return res.status(200).json({ status: true, message: "Product updated", data: updatedCart });
+            return res.status(200).json({ status: true, message: "Product updated", data: val });
         }
 
     } catch (error) {
@@ -210,11 +268,11 @@ const cartDelete = async (req, res) => {
         if (!ObjectIdCheck(userId)) {
             return res.status(400).json({ status: false, message: 'Invalid userId' });
         }
-        const user = await userModel.findOne(userId);
+        const user = await userModel.findById(userId);
         if (!user) {
             return res.status(404).json({ status: false, message: 'User not found' });
         }
-        if (String(userId) !== (req.userId).toString()) {
+        if (userId.toString() !== (req.userId).toString()) {
             return res.status(401).json({ status: false, message: 'Unauthorized' });
         }
         const cart = await cartModel.findOne({ userId: userId });
@@ -224,11 +282,11 @@ const cartDelete = async (req, res) => {
         cart.totalItems = 0;
         cart.totalPrice = 0;
         cart.items = [];
-        await cart.save();
+        let val = await cart.save();
         return res.status(204).json({
             status: true,
             message: 'Success',
-            data: await cartModel.findOne({ _id: cart._id })
+            data: val
         })
 
     } catch (error) {
