@@ -19,7 +19,7 @@ const createProduct = async (req, res) => {
         if (!sizeCheck((availableSizes.toUpperCase().split(',')).map(e=>e.trim()))) {
             return res.status(400).json({ status: false, message: 'Please enter valid sizes' });
         }
-        if (isNaN(Number.parseFloat(price))) {
+        if (Number.isNaN(parseFloat(price))) {
             return res.status(400).json({ status: false, message: 'Please enter valid price' });
         }
         if (currencyId != "INR") {
