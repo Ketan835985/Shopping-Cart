@@ -16,13 +16,10 @@ const createProduct = async (req, res) => {
         if (product) {
             return res.status(400).json({ status: false, message: 'Product Title already exists' });
         }
-        if (!availableSizes) {
-            return res.status(400).json({ status: false, message: 'Please enter valid sizes' });
-        }
         if (!sizeCheck((availableSizes.toUpperCase().split(',')).map(e=>e.trim()))) {
             return res.status(400).json({ status: false, message: 'Please enter valid sizes' });
         }
-        if (!Number.isInteger(Number(price))) {
+        if (isNaN(Number.parseFloat(price))) {
             return res.status(400).json({ status: false, message: 'Please enter valid price' });
         }
         if (currencyId != "INR") {
@@ -48,7 +45,6 @@ const createProduct = async (req, res) => {
             availableSizes: (availableSizes.toUpperCase().split(',')).map(e=>e.trim()),
             installments: installments
         }
-
         const newProduct = await productModel.create(productDetail);
        return res.status(201).json({ status: true, message: 'Product Created', data: newProduct });
     } catch (error) {
@@ -88,7 +84,7 @@ const getProduct = async (req, res) => {
         if(products.length ==0){
             return res.status(404).json({ status: false, message: 'Products not found' });
         }
-        res.status(200).json({ status: true, message: 'Products found', data: products });
+        return res.status(200).json({ status: true, message: 'Products found', data: products });
     } catch (error) {
         res.status(500).json({ status: false, message: error.message });
     }
@@ -96,9 +92,6 @@ const getProduct = async (req, res) => {
 const getProductById = async (req, res) => {
     try {
         const productId = req.params.productId;
-        if(!productId){
-            return res.status(400).json({status:false, message: 'ProductId not found' });
-        }
         if(! ObjectIdCheck(productId)){
             return res.status(400).json({status: false, message: 'Invalid productId' });
         }
@@ -106,7 +99,7 @@ const getProductById = async (req, res) => {
         if(! product){
             return res.status(404).json({status: false, message: 'Product not found' });
         }
-        res.status(200).json({ status: true, message: 'Product found', data: product });
+        return res.status(200).json({ status: true, message: 'Product found', data: product });
     } catch (error) {
         res.status(500).json({ status: false, message: error.message });
     }
@@ -116,9 +109,6 @@ const updateProduct = async (req, res) => {
     try {
         const {title, productImage} = req.body;
         const productId = req.params.productId;
-        if(!productId){
-            return res.status(400).json({status:false, message: 'ProductId not found' });
-        }
         if(! ObjectIdCheck(productId)){
             return res.status(400).json({status: false, message: 'Invalid productId' });
         }
@@ -126,10 +116,10 @@ const updateProduct = async (req, res) => {
         if(! product){
             return res.status(404).json({status: false, message: 'Product not found' });
         }
-        if(!req.body||( Object.keys(req.body)).length == 0){
-            return res.status(400).json({status: false, message: 'Please enter data' });
+        if(( Object.keys(req.body)).length == 0 && (req.files).length == 0){
+            return res.status(400).json({status: false, message: 'Please enter data for update' });
         }
-        if(productImage){
+        if((req.files).length>0){
             const url = await uploadFiles(req.files[0]);
             req.body.productImage = url;
         }
@@ -147,16 +137,16 @@ const updateProduct = async (req, res) => {
         if(!updatedProduct){
             return res.status(404).json({status: false, message: 'Product not found' });
         }
-        res.status(200).json({ status: true, message: 'Product updated', data: updatedProduct });
+        return res.status(200).json({ status: true, message: 'Product updated', data: updatedProduct });
     } catch (error) {
         if (error.message.includes('duplicate')) {
-            res.status(400).json({ status: false, message: error.message });
+            return res.status(400).json({ status: false, message: error.message });
         }
         else if (error.message.includes('validation')) {
-            res.status(400).json({ status: false, message: error.message });
+            return res.status(400).json({ status: false, message: error.message });
         }
         else {
-            res.status(500).json({ status: false, message: error.message });
+            return res.status(500).json({ status: false, message: error.message });
         }
     }
 }
@@ -164,9 +154,6 @@ const updateProduct = async (req, res) => {
 const deletedProduct = async (req, res) => {
     try {
         const productId = req.params.productId;
-        if(!productId){
-            return res.status(400).json({status:false, message: 'ProductId not found' });
-        }
         if(! ObjectIdCheck(productId)){
             return res.status(400).json({status: false, message: 'Invalid productId' });
         }
@@ -177,7 +164,7 @@ const deletedProduct = async (req, res) => {
         product.isDeleted = true;
         product.deletedAt = new Date();
         await product.save();
-        res.status(200).json({ status: true, message: 'Product deleted' });
+        return res.status(200).json({ status: true, message: 'Product deleted' });
     } catch (error) {
         res.status(500).json({ status: false, message: error.message });
     }

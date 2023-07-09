@@ -11,7 +11,7 @@ const createCart = async (req, res) => {
     try {
         const userId = req.params.userId;
         const { productId, quantity, totalItems, cartId } = req.body;
-        if (!userId || !productId) {
+        if ( !productId) {
             return res.status(400).json({ status: false, message: 'Please enter data' });
         }
         if (!ObjectIdCheck(userId)) {
@@ -29,7 +29,7 @@ const createCart = async (req, res) => {
             return res.status(404).json({ status: false, message: 'Product not found' });
         }
         if (userId.toString() !== String(req.userId)) {
-            return res.status(401).json({ status: false, message: 'Unauthorized' });
+            return res.status(403).json({ status: false, message: 'Unauthorized' });
         }
         const cartByUser = await cartModel.findOne({ userId: userId })
         if (cartId || cartByUser) {
@@ -41,11 +41,10 @@ const createCart = async (req, res) => {
                 if (!cart) {
                     return res.status(404).json({ status: false, message: 'Cart not found' });
                 }
-                if (String(cart.userId) !== userId.toString()) {
-                    return res.status(401).json({ status: false, message: 'Unauthorized' });
+                if (String(cart.userId) !== (req.userId).toString()) {
+                    return res.status(403).json({ status: false, message: 'Unauthorized' });
                 }
                 if (cart.items.length > 0) {
-                    console.log(cart.items)
                     let checkPro = (cart.items).find(x => (x.productId).toString() === (productId).toString());
                     if (!checkPro) {
                         cart.items.push({
@@ -126,13 +125,13 @@ const createCart = async (req, res) => {
         }
     } catch (error) {
         if (error.message.includes('duplicate')) {
-            res.status(400).json({ status: false, message: error.message });
+            return res.status(400).json({ status: false, message: error.message });
         }
         else if (error.message.includes('validation')) {
-            res.status(400).json({ status: false, message: error.message });
+            return res.status(400).json({ status: false, message: error.message });
         }
         else {
-            res.status(500).json({ status: false, message: error.message });
+            return res.status(500).json({ status: false, message: error.message });
         }
     }
 }
@@ -142,7 +141,7 @@ const updateCart = async (req, res) => {
     try {
         const userId = req.params.userId;
         const { cartId, productId, removeProduct } = req.body
-        if (!userId || !productId) {
+        if (!productId) {
             return res.status(400).json({ status: false, message: 'Please enter data' });
         }
         if (!ObjectIdCheck(userId)) {
@@ -160,7 +159,7 @@ const updateCart = async (req, res) => {
             return res.status(404).json({ status: false, message: 'Product not found' });
         }
         if (userId.toString() !== String(req.userId)) {
-            return res.status(401).json({ status: false, message: 'Unauthorized' });
+            return res.status(403).json({ status: false, message: 'Unauthorized' });
         }
 
         if (cartId) {
@@ -172,7 +171,7 @@ const updateCart = async (req, res) => {
                 return res.status(404).json({ status: false, message: 'Cart not found' });
             }
             if (String(cart.userId) !== userId.toString()) {
-                return res.status(401).json({ status: false, message: 'Unauthorized' });
+                return res.status(403).json({ status: false, message: 'Unauthorized' });
             }
         }
 
@@ -235,9 +234,6 @@ const updateCart = async (req, res) => {
 const getCart = async (req, res) => {
     try {
         const userId = req.params.userId;
-        if (!userId) {
-            return res.status(400).json({ status: false, message: 'Please enter data' });
-        }
         if (!ObjectIdCheck(userId)) {
             return res.status(400).json({ status: false, message: 'Invalid userId' });
         }
@@ -246,7 +242,7 @@ const getCart = async (req, res) => {
             return res.status(404).json({ status: false, message: 'User not found' });
         }
         if (String(userId) !== (req.userId).toString()) {
-            return res.status(401).json({ status: false, message: 'Unauthorized' });
+            return res.status(403).json({ status: false, message: 'Unauthorized' });
         }
         const cart = await cartModel.findOne({ userId: userId });
         if (!cart) {
@@ -262,9 +258,6 @@ const getCart = async (req, res) => {
 const cartDelete = async (req, res) => {
     try {
         const userId = req.params.userId;
-        if (!userId) {
-            return res.status(400).json({ status: false, message: 'Please enter data' });
-        }
         if (!ObjectIdCheck(userId)) {
             return res.status(400).json({ status: false, message: 'Invalid userId' });
         }
@@ -273,7 +266,7 @@ const cartDelete = async (req, res) => {
             return res.status(404).json({ status: false, message: 'User not found' });
         }
         if (userId.toString() !== (req.userId).toString()) {
-            return res.status(401).json({ status: false, message: 'Unauthorized' });
+            return res.status(403).json({ status: false, message: 'Unauthorized' });
         }
         const cart = await cartModel.findOne({ userId: userId });
         if (!cart) {
@@ -283,7 +276,7 @@ const cartDelete = async (req, res) => {
         cart.totalPrice = 0;
         cart.items = [];
         let val = await cart.save();
-        return res.status(204).json({
+        return res.status(204).send({
             status: true,
             message: 'Success',
             data: val

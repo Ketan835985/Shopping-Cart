@@ -7,9 +7,6 @@ const createOrder = async (req, res) => {
     try {
         const userId = req.params.userId;
         const { status, cancellable } = req.body;
-        if (!userId) {
-            return res.status(400).json({ status: false, message: 'UserId not found' });
-        }
         if (!ObjectIdCheck(userId)) {
             return res.status(400).json({ status: false, message: 'Invalid userId' });
         }
@@ -18,7 +15,7 @@ const createOrder = async (req, res) => {
             return res.status(404).json({ status: false, message: 'User not found' });
         }
         if (userId.toString() !== (req.userId).toString()) {
-            return res.status(401).json({ status: false, message: 'Unauthorized' });
+            return res.status(403).json({ status: false, message: 'Unauthorized' });
         }
         if (status) {
             const arr = ["pending", "completed", "cancled"];
@@ -65,21 +62,21 @@ const updateOrder = async (req, res) => {
             return res.status(400).json({ status: false, message: 'OrderId or UserId not found' });
         }
         if (!ObjectIdCheck(orderId) || !ObjectIdCheck(userId)) {
-            return res.status(400).json({ status: false, message: 'Invalid orderId' });
+            return res.status(400).json({ status: false, message: 'Invalid orderId/userId' });
         }
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(404).json({ status: false, message: 'User not found' });
         }
         if (userId.toString() !== (req.userId).toString()) {
-            return res.status(401).json({ status: false, message: 'Unauthorized' });
+            return res.status(403).json({ status: false, message: 'Unauthorized' });
         }
         const order = await orderModel.findOne({ _id: orderId, userId: userId, isDeleted: false });
         if (!order) {
             return res.status(404).json({ status: false, message: 'Order not found' });
         }
         if (!status) {
-            return res.status(400).json({ status: false, message: 'Please enter data' });
+            return res.status(400).json({ status: false, message: 'Please enter data status' });
         }
         if (order.status == "completed") {
             return res.status(400).json({ status: false, message: 'Order already completed' });
