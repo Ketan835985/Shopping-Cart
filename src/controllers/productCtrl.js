@@ -31,6 +31,7 @@ const createProduct = async (req, res) => {
         if (files.length === 0) {
             return res.status(400).json({ status: false, message: 'Please upload product image' });
         }
+        console.log(files);
         const url = await uploadFiles(files[0]);
         let productImage = url;
         const productDetail = {
