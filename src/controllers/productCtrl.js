@@ -1,7 +1,7 @@
 const { uploadFiles } = require('../aws/aws');
 const productModel = require('../models/productModel');
 const { sizeCheck } = require('../utils/proValidation');
-const {ObjectIdCheck} = require('../utils/validations');
+const { ObjectIdCheck } = require('../utils/validations');
 
 
 
@@ -16,7 +16,7 @@ const createProduct = async (req, res) => {
         if (product) {
             return res.status(400).json({ status: false, message: 'Product Title already exists' });
         }
-        if (!sizeCheck((availableSizes.toUpperCase().split(',')).map(e=>e.trim()))) {
+        if (!sizeCheck((availableSizes.toUpperCase().split(',')).map(e => e.trim()))) {
             return res.status(400).json({ status: false, message: 'Please enter valid sizes' });
         }
         if (Number.isNaN(parseFloat(price))) {
@@ -28,12 +28,16 @@ const createProduct = async (req, res) => {
         if (currencyFormat != '₹') {
             return res.status(400).json({ status: false, message: 'Please enter valid currency format' });
         }
-        if (files.length === 0) {
+        if(!files){
             return res.status(400).json({ status: false, message: 'Please upload product image' });
         }
-        console.log(files);
-        const url = await uploadFiles(files[0]);
-        let productImage = url;
+        if (files) {
+            if (files.length === 0) {
+                return res.status(400).json({ status: false, message: 'Please upload product image' });
+            }
+            req.body.productImage = await uploadFiles(files[0]);
+        }
+        
         const productDetail = {
             title: title,
             description: description,
@@ -43,11 +47,11 @@ const createProduct = async (req, res) => {
             isFreeShipping: isFreeShipping,
             productImage: productImage,
             style: style,
-            availableSizes: (availableSizes.toUpperCase().split(',')).map(e=>e.trim()),
+            availableSizes: (availableSizes.toUpperCase().split(',')).map(e => e.trim()),
             installments: installments
         }
         const newProduct = await productModel.create(productDetail);
-       return res.status(201).json({ status: true, message: 'Product Created', data: newProduct });
+        return res.status(201).json({ status: true, message: 'Product Created', data: newProduct });
     } catch (error) {
         if (error.message.includes('duplicate')) {
             return res.status(400).json({ status: false, message: error.message });
@@ -82,7 +86,7 @@ const getProduct = async (req, res) => {
             sortOption.price = JSON.parse(parseInt(priceSort));
         }
         const products = await productModel.find(filterDetail).sort(sortOption);
-        if(products.length ==0){
+        if (products.length == 0) {
             return res.status(404).json({ status: false, message: 'Products not found' });
         }
         return res.status(200).json({ status: true, message: 'Products found', data: products });
@@ -93,12 +97,12 @@ const getProduct = async (req, res) => {
 const getProductById = async (req, res) => {
     try {
         const productId = req.params.productId;
-        if(! ObjectIdCheck(productId)){
-            return res.status(400).json({status: false, message: 'Invalid productId' });
+        if (!ObjectIdCheck(productId)) {
+            return res.status(400).json({ status: false, message: 'Invalid productId' });
         }
-        const product = await productModel.findOne({_id:productId, isDeleted: false}); 
-        if(! product){
-            return res.status(404).json({status: false, message: 'Product not found' });
+        const product = await productModel.findOne({ _id: productId, isDeleted: false });
+        if (!product) {
+            return res.status(404).json({ status: false, message: 'Product not found' });
         }
         return res.status(200).json({ status: true, message: 'Product found', data: product });
     } catch (error) {
@@ -108,35 +112,37 @@ const getProductById = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
-        const {title, productImage} = req.body;
+        const { title, productImage } = req.body;
         const productId = req.params.productId;
-        if(! ObjectIdCheck(productId)){
-            return res.status(400).json({status: false, message: 'Invalid productId' });
+        if (!ObjectIdCheck(productId)) {
+            return res.status(400).json({ status: false, message: 'Invalid productId' });
         }
-        const product = await productModel.findOne({_id: productId, isDeleted: false});
-        if(! product){
-            return res.status(404).json({status: false, message: 'Product not found' });
+        const product = await productModel.findOne({ _id: productId, isDeleted: false });
+        if (!product) {
+            return res.status(404).json({ status: false, message: 'Product not found' });
         }
-        if(( Object.keys(req.body)).length == 0 && (req.files).length == 0){
-            return res.status(400).json({status: false, message: 'Please enter data for update' });
+        if ((Object.keys(req.body)).length == 0 && (req.files).length == 0) {
+            return res.status(400).json({ status: false, message: 'Please enter data for update' });
         }
-        if((req.files).length>0){
-            const url = await uploadFiles(req.files[0]);
-            req.body.productImage = url;
-        }
-        if(title){
-            const titleCheck = await productModel.findOne({title : title});
-            if(titleCheck){
-                return res.status(400).json({status: false, message: 'Product title already exists'});
+        if (req.files) {
+            if ((req.files).length > 0) {
+                const url = await uploadFiles(req.files[0]);
+                req.body.productImage = url;
             }
-            else{
+        }
+        if (title) {
+            const titleCheck = await productModel.findOne({ title: title });
+            if (titleCheck) {
+                return res.status(400).json({ status: false, message: 'Product title already exists' });
+            }
+            else {
                 req.body.title = title;
             }
         }
 
-        const updatedProduct = await productModel.findOneAndUpdate({_id:productId, isDeleted: false}, req.body, {new: true});
-        if(!updatedProduct){
-            return res.status(404).json({status: false, message: 'Product not found' });
+        const updatedProduct = await productModel.findOneAndUpdate({ _id: productId, isDeleted: false }, req.body, { new: true });
+        if (!updatedProduct) {
+            return res.status(404).json({ status: false, message: 'Product not found' });
         }
         return res.status(200).json({ status: true, message: 'Product updated', data: updatedProduct });
     } catch (error) {
@@ -155,12 +161,12 @@ const updateProduct = async (req, res) => {
 const deletedProduct = async (req, res) => {
     try {
         const productId = req.params.productId;
-        if(! ObjectIdCheck(productId)){
-            return res.status(400).json({status: false, message: 'Invalid productId' });
+        if (!ObjectIdCheck(productId)) {
+            return res.status(400).json({ status: false, message: 'Invalid productId' });
         }
-        const product = await productModel.findOne({_id:productId, isDeleted: false});
-        if(! product){
-            return res.status(404).json({status: false, message: 'Product not found' });
+        const product = await productModel.findOne({ _id: productId, isDeleted: false });
+        if (!product) {
+            return res.status(404).json({ status: false, message: 'Product not found' });
         }
         product.isDeleted = true;
         product.deletedAt = new Date();
