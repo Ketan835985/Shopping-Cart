@@ -130,7 +130,7 @@ const updateUser = async (req, res) => {
     try {
         const userId = req.params.userId;
         let data = req.body;
-        if ((Object.keys(data)).length === 0) {
+        if ((Object.keys(data)).length === 0 && !req.files) {
             return res.status(400).json({ status: false, message: 'Please enter data' });
         }
         if (!ObjectIdCheck(userId)) {
@@ -169,6 +169,13 @@ const updateUser = async (req, res) => {
             const salt = await bcrypt.genSalt();
             const hashedPassword = await bcrypt.hash(data.password, salt);
             data.password = hashedPassword
+        }
+        if(req.files){
+            if((req.files).length>0){
+                const files = req.files
+                let url = await uploadFiles(files[0])
+                data.profileImage = url
+            }
         }
         let updateUser2 = await userModel.findByIdAndUpdate(userId, { $set: data }, { new: true });
         return res.status(200).json({ status: true, message: 'User updated successfully', data: updateUser2 });
