@@ -54,14 +54,14 @@ const createCart = async (req, res) => {
                         cart.totalItems += 1;
                         cart.totalPrice += product.price;
                         const val = await cart.save();
-                        return res.status(200).json({ status: true, message: "Product updated", data: val });
+                        return res.status(200).json({ status: true, message: "Cart creation updated", data: val });
                     }
                     else {
                         const cartProduct = (cart.items).find(x => (x.productId).toString() === (productId).toString());
                         cartProduct.quantity += 1;
                         cart.totalPrice += product.price;
                         const val = await cart.save();
-                        return res.status(200).json({ status: true, message: "Product updated", data: val });
+                        return res.status(200).json({ status: true, message: "Cart creation updated", data: val });
                     }
                 }
                 else {
@@ -72,7 +72,7 @@ const createCart = async (req, res) => {
                     cart.totalItems = 1;
                     cart.totalPrice = product.price;
                     const val = await cart.save();
-                    return res.status(200).json({ status: true, message: "Product updated", data: val });
+                    return res.status(200).json({ status: true, message: "Cart Creation updated", data: val });
                 }
             }
             else {
@@ -187,13 +187,13 @@ const updateCart = async (req, res) => {
                     const val = await cart.save();
                     const updatedCart = await cartModel.findById(cartId).lean();
                     updateCart.removeProduct = updatedCart.removeProduct + 1;
-                    return res.status(200).json({ status: true, message: "Product updated", data: updatedCart });
+                    return res.status(200).json({ status: true, message: "Cart updated", data: updatedCart });
                 }
                 else {
-                    return res.status(400).json({ status: false, message: "Product does not exist" });
+                    return res.status(400).json({ status: false, message: "Cart Product does not exist" });
                 }
             }
-            return res.status(200).json({ status: true, message: "Product updated", data: cart });
+            return res.status(200).json({ status: true, message: "Cart updated", data: cart });
         }
         else {
             if (cart.items.length > 0) {
@@ -201,13 +201,13 @@ const updateCart = async (req, res) => {
                 if (proCheck !== undefined) {
                     cart.items = (cart.items).filter(item => item.productId.toString() !== productId.toString())
                     cart.totalItems -= 1;
-                    cart.totalPrice -= product.price;
+                    cart.totalPrice -= (proCheck[items][quantity])*product.price;
                     const val = await cart.save();
-                    val.removeProduct = 1;
-                    return res.status(200).json({ status: true, message: "Product updated", data: val });
+                    val.removeProduct = proCheck[items][quantity];
+                    return res.status(200).json({ status: true, message: "Cart updated", data: val });
                 }
                 else {
-                    return res.status(400).json({ status: false, message: "Product does not exist" });
+                    return res.status(400).json({ status: false, message: "cart Product does not exist" });
                 }
             }
             cart.totalItems = 0;
