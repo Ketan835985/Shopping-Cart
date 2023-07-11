@@ -134,7 +134,7 @@ const uploadFiles = async (file) => {
         const data = await s3.upload(uploadParams).promise();
         return data.Location;
     } catch (error) {
-        throw new Error(error);
+        return {error : error.message}
     }
 };
 

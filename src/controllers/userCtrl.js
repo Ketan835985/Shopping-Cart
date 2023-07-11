@@ -10,12 +10,12 @@ const { ObjectIdCheck } = require('../utils/validations');
 const userCreate = async (req, res) => {
     try {
         const files = req.files
-        const { fname, lname, phone, email, password, address, profileImage } = req.body;
+        let { fname, lname, phone, email, password, address, profileImage } = req.body;
         // console.log(req.body)
         if (!fname || !lname || !phone || !email || !password) {
             return res.status(400).json({ status: false, message: 'Please enter all fields' });
         }
-        if (/^[6789]\d{9}$/.test(phone)==false) {
+        if (/^[6789]\d{9}$/.test(phone) == false) {
             return res.status(400).json({ status: false, message: 'Please enter valid phone number' });
         }
         if (!validator.isEmail(email)) {
@@ -34,12 +34,13 @@ const userCreate = async (req, res) => {
         if (!address.shipping.pincode || !address.billing.pincode) {
             return res.status(400).json({ status: false, message: 'Please enter address' });
         }
+
         if (files.length === 0) {
             return res.status(400).json({ status: false, message: 'Please upload profile image' });
         }
         else {
-            const phoneCheck = await userModel.findOne({ $or: [{ phone }, { email }] });
             const url = await uploadFiles(files[0]);
+            const phoneCheck = await userModel.findOne({ $or: [{ phone }, { email }] });
             if (phoneCheck) {
                 return res.status(400).json({ status: false, message: 'Phone number or email already exists' });
             }
@@ -129,7 +130,7 @@ const updateUser = async (req, res) => {
     try {
         const userId = req.params.userId;
         let data = req.body;
-        if ((Object.keys(data)).length===0) {
+        if ((Object.keys(data)).length === 0) {
             return res.status(400).json({ status: false, message: 'Please enter data' });
         }
         if (!ObjectIdCheck(userId)) {
@@ -152,9 +153,9 @@ const updateUser = async (req, res) => {
             }
         }
         if (data.phone) {
-            
+
             const phoneCheck = await userModel.findOne({ phone: data.phone });
-            if (/^[6789]\d{9}$/.test(data.phone)==false) {
+            if (/^[6789]\d{9}$/.test(data.phone) == false) {
                 return res.status(400).json({ status: false, message: 'Please enter valid phone number' })
             }
             if (phoneCheck) {

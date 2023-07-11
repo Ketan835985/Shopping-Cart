@@ -121,7 +121,7 @@ const updateProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ status: false, message: 'Product not found' });
         }
-        if ((Object.keys(req.body)).length == 0 && (req.files).length == 0) {
+        if ((Object.keys(req.body)).length == 0 && !req.files) {
             return res.status(400).json({ status: false, message: 'Please enter data for update' });
         }
         if (req.files) {
@@ -139,7 +139,6 @@ const updateProduct = async (req, res) => {
                 req.body.title = title;
             }
         }
-
         const updatedProduct = await productModel.findOneAndUpdate({ _id: productId, isDeleted: false }, req.body, { new: true });
         if (!updatedProduct) {
             return res.status(404).json({ status: false, message: 'Product not found' });
