@@ -35,7 +35,7 @@ const userCreate = async (req, res) => {
             return res.status(400).json({ status: false, message: 'Please enter address' });
         }
 
-        if (files.length === 0) {
+        if (!files && files.length == 0) {
             return res.status(400).json({ status: false, message: 'Please upload profile image' });
         }
         else {

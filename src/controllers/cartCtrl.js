@@ -230,7 +230,7 @@ const updateCart = async (req, res) => {
             (x) => x.productId.toString() !== productId.toString()
           );
           cart.totalItems -= 1;
-          cart.totalPrice -= product.price;
+          cart.totalPrice -=(checkPro.quantity)*product.price;
           const val = await cart.save();
           return res.status(200).json({
             status: true,
@@ -259,6 +259,7 @@ const updateCart = async (req, res) => {
             }
           });
           cart.totalPrice -= product.price;
+          cart.totalItems = (checkPro.quantity) == 1 ? (cart.totalItems)-- : cart.totalItems
           val = await cart.save();
           return res.status(200).json({
             status: true,

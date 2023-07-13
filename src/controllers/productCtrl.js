@@ -1,4 +1,3 @@
-const { request } = require("express");
 const { uploadFiles } = require("../aws/aws");
 const productModel = require("../models/productModel");
 const { sizeCheck } = require("../utils/proValidation");
@@ -146,6 +145,9 @@ const getProduct = async (req, res) => {
     res.status(500).json({ status: false, message: error.message });
   }
 };
+
+
+
 const getProductById = async (req, res) => {
   try {
     const productId = req.params.productId;
@@ -264,10 +266,7 @@ const updateProduct = async (req, res) => {
     if (isFreeShipping) {
       updateDetail.isFreeShipping = isFreeShipping;
     }
-    if (req.files) {
-      const url = await uploadFiles(req.files[0]);
-      updateDetail.productImage = url;
-    }
+    
 
     const updatedProduct = await productModel.findOneAndUpdate(
       { _id: productId, isDeleted: false },

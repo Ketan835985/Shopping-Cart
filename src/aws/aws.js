@@ -112,7 +112,6 @@
 
 const AWS = require('aws-sdk');
 const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION } = require('../../config');
-const fs = require('fs');
 
 const uploadFiles = async (file) => {
     AWS.config.update({

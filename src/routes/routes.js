@@ -36,8 +36,10 @@ router.delete('/users/:userId/cart', auth, cartDelete)
 // ========================================== Order routes ======================================================
 router.post('/users/:userId/orders', auth, createOrder)
 router.put('/users/:userId/orders', auth, updateOrder)
+
+
 router.all("*", function (req, res) {
-    res.status(404).send({ status: false, message: "you're on a wrong route" });
+    res.status(200).send({ status: true, message: "you're on a wrong route" });
   });
 
 module.exports = router;
