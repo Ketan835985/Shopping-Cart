@@ -8,7 +8,7 @@ const { ObjectIdCheck } = require('../utils/validations');
 const createProduct = async (req, res) => {
     try {
         const files = req.files;
-        const { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = req.body;
+        let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, productImage } = req.body;
         if (!title || !description || !price || !currencyId || !currencyFormat || !isFreeShipping || !style || !availableSizes || !installments) {
             return res.status(400).json({ status: false, message: 'Please enter all fields' });
         }
@@ -28,16 +28,17 @@ const createProduct = async (req, res) => {
         if (currencyFormat != '₹') {
             return res.status(400).json({ status: false, message: 'Please enter valid currency format' });
         }
-        if(!files){
+        if (!files) {
             return res.status(400).json({ status: false, message: 'Please upload product image' });
         }
         if (files) {
             if (files.length === 0) {
                 return res.status(400).json({ status: false, message: 'Please upload product image' });
             }
-            req.body.productImage = await uploadFiles(files[0]);
+            let url = await uploadFiles(files[0]);
+            req.body.productImage = url;
         }
-        
+
         const productDetail = {
             title: title,
             description: description,
@@ -112,7 +113,7 @@ const getProductById = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
-        const { title, productImage } = req.body;
+        const { title, productImage, availableSizes, installments, style, price, description,currencyFormat, isFreeShipping,description } = req.body;
         const productId = req.params.productId;
         if (!ObjectIdCheck(productId)) {
             return res.status(400).json({ status: false, message: 'Invalid productId' });
@@ -124,10 +125,11 @@ const updateProduct = async (req, res) => {
         if ((Object.keys(req.body)).length == 0 && !req.files) {
             return res.status(400).json({ status: false, message: 'Please enter data for update' });
         }
+        const updateDetail = {}
         if (req.files) {
             if ((req.files).length > 0) {
                 const url = await uploadFiles(req.files[0]);
-                req.body.productImage = url;
+                updateDetail.productImage = url;
             }
         }
         if (title) {
@@ -136,9 +138,35 @@ const updateProduct = async (req, res) => {
                 return res.status(400).json({ status: false, message: 'Product title already exists' });
             }
             else {
-                req.body.title = title;
+                updateDetail.title = title;
             }
         }
+        if (availableSizes) {
+            if (!sizeCheck(availableSizes.toUpperCase().split(",").map((e) => e.trim()))) {
+                return res.status(400).json({ status: false, message: 'Product Size not Match' });
+            }
+        }
+        if(installments){
+            updateDetail.installments = installments
+        }
+        if(style){
+            updateDetail.style = style
+        }
+        if(currencyFormat){
+            if(currencyFormat == "₹"){
+                updateDetail.currencyFormat = currencyFormat
+            }
+            else{
+                return res.status(400).json({status:false, message: "enterValid Currency Format"})
+            }
+        }
+        if(price){
+            if(Number.isNaN(parseFloat(price))){
+                return res.status(400).json({status:false, message: "Enter the Price value in Number"})
+            }
+            updateDetail.price = price
+      }
+      
         const updatedProduct = await productModel.findOneAndUpdate({ _id: productId, isDeleted: false }, req.body, { new: true });
         if (!updatedProduct) {
             return res.status(404).json({ status: false, message: 'Product not found' });

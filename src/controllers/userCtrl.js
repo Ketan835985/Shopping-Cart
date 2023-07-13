@@ -112,9 +112,6 @@ const getUserById = async (req, res) => {
         if (!ObjectIdCheck(userId)) {
             return res.status(400).json({ status: false, message: 'Please enter valid user id' });
         }
-        if (userId.toString() !== String(req.userId)) {
-            return res.status(403).json({ status: false, message: 'You are Not authenticate' });
-        }
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(404).json({ status: false, message: 'User not found' });
