@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 const {PORT, MONGO_URL} = require('../config')
 const router = require('./routes/routes.js')
 const multer = require('multer');
+const cors = require('cors')
 
-
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(multer().any());
