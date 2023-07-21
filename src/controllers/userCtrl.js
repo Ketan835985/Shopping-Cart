@@ -10,6 +10,7 @@ const { ObjectIdCheck } = require('../utils/validations');
 const userCreate = async (req, res) => {
     try {
         const files = req.files
+        // console.log(req.body)
         let { fname, lname, phone, email, password, address, profileImage } = req.body;
         // console.log(req.body)
         if (!fname || !lname || !phone || !email || !password) {
@@ -24,14 +25,14 @@ const userCreate = async (req, res) => {
         if (password.length <= 8 || password.length >= 15) {
             return res.status(400).json({ status: false, message: 'Please enter valid password' });
         }
-        if (!address.shipping.street || !address.billing.street) {
+        if (!"address.shipping.street" || !"address.billing.street") {
             return res.status(400).json({ status: false, message: 'Please enter address' });
         }
-        if (!address.shipping.city || !address.billing.city) {
+        if (!"address.shipping.city" || !"address.billing.city") {
             return res.status(400).json({ status: false, message: 'Please enter address' });
         }
 
-        if (!address.shipping.pincode || !address.billing.pincode) {
+        if (!"address.shipping.pincode" || !"address.billing.pincode") {
             return res.status(400).json({ status: false, message: 'Please enter address' });
         }
 
