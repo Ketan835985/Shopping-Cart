@@ -146,8 +146,6 @@ const getProduct = async (req, res) => {
   }
 };
 
-
-
 const getProductById = async (req, res) => {
   try {
     const productId = req.params.productId;
@@ -266,16 +264,11 @@ const updateProduct = async (req, res) => {
     if (isFreeShipping) {
       updateDetail.isFreeShipping = isFreeShipping;
     }
-    
-
     const updatedProduct = await productModel.findOneAndUpdate(
       { _id: productId, isDeleted: false },
       {
         $set: updateDetail,
-        $addToSet: availableSizes
-          .toUpperCase()
-          .split(",")
-          .map((e) => e.trim()),
+        $addToSet: { availableSizes: { $each: availableSizes.toUpperCase().split(",") } },
       },
       { new: true }
     );
