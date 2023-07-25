@@ -71,16 +71,7 @@ const createProduct = async (req, res) => {
         .status(400)
         .json({ status: false, message: "Please upload product image" });
     }
-    if (files) {
-      if (files.length === 0) {
-        return res
-          .status(400)
-          .json({ status: false, message: "Please upload product image" });
-      }
-      let url = await uploadFiles(files[0]);
-      req.body.productImage = url;
-    }
-
+    
     const productDetail = {
       title: title,
       description: description,
@@ -88,14 +79,22 @@ const createProduct = async (req, res) => {
       currencyId: currencyId,
       currencyFormat: currencyFormat,
       isFreeShipping: isFreeShipping,
-      productImage: productImage,
       style: style,
       availableSizes: availableSizes
-        .toUpperCase()
-        .split(",")
-        .map((e) => e.trim()),
+      .toUpperCase()
+      .split(",")
+      .map((e) => e.trim()),
       installments: installments,
     };
+    if (files) {
+      if (files.length === 0) {
+        return res
+          .status(400)
+          .json({ status: false, message: "Please upload product image" });
+      }
+      let url = await uploadFiles(files[0]);
+      productDetail.productImage = url;
+    }
     const newProduct = await productModel.create(productDetail);
     return res
       .status(201)
