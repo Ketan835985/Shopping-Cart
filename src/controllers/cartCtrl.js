@@ -328,7 +328,7 @@ const getCart = async (req, res) => {
     if (String(userId) !== req.userId.toString()) {
       return res.status(403).json({ status: false, message: "Unauthorized" });
     }
-    const cart = await cartModel.findOne({ userId: userId });
+    const cart = await cartModel.findOne({ userId: userId }).populate('items.productId');
     if (!cart) {
       return res.status(404).json({ status: false, message: "Cart not found" });
     }
