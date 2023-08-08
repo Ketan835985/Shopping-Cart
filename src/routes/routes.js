@@ -3,7 +3,7 @@ const { userCreate, userLogin, updateUser, getUserById } = require('../controlle
 const { auth } = require('../middlewares/auth');
 const { createProduct, getProduct, getProductById, updateProduct, deletedProduct } = require('../controllers/productCtrl')
 const { createCart, getCart, updateCart, cartDelete } = require('../controllers/cartCtrl');
-const { createOrder, updateOrder } = require('../controllers/orderCtrl');
+const { createOrder, updateOrder, orderList } = require('../controllers/orderCtrl');
 
 
 router.get('/test', (req, res) => {
@@ -36,6 +36,7 @@ router.delete('/users/:userId/cart', auth, cartDelete)
 // ========================================== Order routes ======================================================
 router.post('/users/:userId/orders', auth, createOrder)
 router.put('/users/:userId/orders', auth, updateOrder)
+router.get('/users/:userId/orders', auth, orderList)
 
 
 router.all("*", function (req, res) {

@@ -92,7 +92,26 @@ const updateOrder = async (req, res) => {
         return res.status(500).json({ status: false, message: error.message });
     }
 }
+
+
+
+const orderList = async (req, res) => {
+    try {
+        const userId = req.params.userId
+        if(!ObjectIdCheck(userId)){
+            return res.status(400).json({status: 'false', message: "Invalid userId provided"})
+        }
+        if(String(userId) !== String(req.userId)){
+            return res.status(403).json({status: 'false', message: "Unauthorized"})
+        }
+        const orders = await orderModel.find({userId: userId})
+        res.status(200).json({status: true, message: "Order find success", data: orders})
+    } catch (error) {
+        return res.status(500).json({ status: false, message: error.message });
+    }
+}
 module.exports = {
     createOrder,
     updateOrder,
+    orderList
 }

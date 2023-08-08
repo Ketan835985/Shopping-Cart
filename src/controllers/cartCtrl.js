@@ -230,7 +230,7 @@ const updateCart = async (req, res) => {
             (x) => x.productId.toString() !== productId.toString()
           );
           cart.totalItems -= 1;
-          cart.totalPrice -=(checkPro.quantity)*product.price;
+          cart.totalPrice -=((checkPro.quantity)*(product.price));
           const val = await cart.save();
           return res.status(200).json({
             status: true,
@@ -252,11 +252,12 @@ const updateCart = async (req, res) => {
         let checkPro = cart.items.find(
           (x) => x.productId.toString() === productId.toString()
         );
-        if (checkPro) {
-          cart.items = cart.items.map((x) => {
+        if (checkPro.__index >=0) {
+          cart.items = (cart.items).map((x) => {
             if (x.productId.toString() === productId.toString()) {
               x.quantity -= 1;
             }
+            return x
           });
           cart.totalPrice -= product.price;
           cart.totalItems = (checkPro.quantity) == 1 ? (cart.totalItems)-- : cart.totalItems
