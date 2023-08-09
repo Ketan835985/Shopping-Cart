@@ -3,12 +3,7 @@ const { userCreate, userLogin, updateUser, getUserById } = require('../controlle
 const { auth } = require('../middlewares/auth');
 const { createProduct, getProduct, getProductById, updateProduct, deletedProduct } = require('../controllers/productCtrl')
 const { createCart, getCart, updateCart, cartDelete } = require('../controllers/cartCtrl');
-const { createOrder, updateOrder, orderList } = require('../controllers/orderCtrl');
-
-
-router.get('/test', (req, res) => {
-    res.send('test')
-})
+const { createOrder, updateOrder, orderList, orderById } = require('../controllers/orderCtrl');
 
 
 // ========================================== user routes ======================================================
@@ -37,7 +32,7 @@ router.delete('/users/:userId/cart', auth, cartDelete)
 router.post('/users/:userId/orders', auth, createOrder)
 router.put('/users/:userId/orders', auth, updateOrder)
 router.get('/users/:userId/orders', auth, orderList)
-
+router.get('/users/orders/:orderId', auth, orderById)
 
 router.all("*", function (req, res) {
     res.status(200).send({ status: true, message: "you're on a wrong route" });
