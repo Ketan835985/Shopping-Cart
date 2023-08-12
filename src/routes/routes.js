@@ -32,7 +32,7 @@ router.delete('/users/:userId/cart', auth, cartDelete)
 router.post('/users/:userId/orders', auth, createOrder)
 router.put('/users/:userId/orders', auth, updateOrder)
 router.get('/users/:userId/orders', auth, orderList)
-router.get('/users/orders/:orderId', auth, orderById)
+router.get('/:userId/orders/:orderId', auth, orderById)
 
 router.all("*", function (req, res) {
     res.status(200).send({ status: true, message: "you're on a wrong route" });

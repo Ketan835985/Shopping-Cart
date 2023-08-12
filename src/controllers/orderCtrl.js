@@ -104,7 +104,7 @@
             if(String(userId) !== String(req.userId)){
                 return res.status(403).json({status: 'false', message: "Unauthorized"})
             }
-            const orders = await orderModel.find({userId: userId})
+            const orders = await orderModel.find({userId: userId}).sort({createdAt: -1})
             res.status(200).json({status: true, message: "Order find success", data: orders})
         } catch (error) {
             return res.status(500).json({ status: false, message: error.message });
@@ -119,7 +119,7 @@
             if(!ObjectIdCheck(orderId) || !ObjectIdCheck(userId)){
                 return res.status(400).json({status : false, message : 'Invalid order id provided for order'})
             }
-            const order = await orderModel.findOne({_id : orderId, userId : userId})
+            const order = await orderModel.findOne({ _id: orderId, userId: userId }).populate('items.productId')
             if(!order){
                 return res.status(404).json({status : false, message : 'order not found'})
             }
@@ -128,6 +128,8 @@
             return res.status(500).json({ status: false, message: error.message });
         }
     }
+
+
     module.exports = {
         createOrder,
         updateOrder,
