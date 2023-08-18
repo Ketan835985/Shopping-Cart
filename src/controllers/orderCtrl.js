@@ -85,7 +85,7 @@
                 return res.status(400).json({ status: false, message: 'Order already cancled' });
             }
             if (order.status == "pending") {
-                const updateOrder = await orderModel.findOneAndUpdate({ _id: orderId, isDeleted: false }, { $set: { status: status } }, { new: true });
+                const updateOrder = await orderModel.findOneAndUpdate({ _id: orderId, isDeleted: false }, { $set: { status: status, cancellable : false } }, { new: true });
                 return res.status(200).json({ status: true, message: 'Order updated', data: updateOrder });
             }
         } catch (error) {

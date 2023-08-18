@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const { SECRET_KEY } = require('../../config');
 const { ObjectIdCheck } = require('../utils/validations');
 
-
+const phonePattern = /^[6789]\d{9}$/
 const userCreate = async (req, res) => {
     try {
         const files = req.files
@@ -16,7 +16,7 @@ const userCreate = async (req, res) => {
         if (!fname || !lname || !phone || !email || !password) {
             return res.status(400).json({ status: false, message: 'Please enter all fields' });
         }
-        if (/^[6789]\d{9}$/.test(phone) == false) {
+        if (!phonePattern.test(phone)) {
             return res.status(400).json({ status: false, message: 'Please enter valid phone number' });
         }
         if (!validator.isEmail(email)) {
@@ -153,7 +153,7 @@ const updateUser = async (req, res) => {
         if (data.phone) {
 
             const phoneCheck = await userModel.findOne({ phone: data.phone });
-            if (/^[6789]\d{9}$/.test(data.phone) == false) {
+            if (!phonePattern.test(data.phone)) {
                 return res.status(400).json({ status: false, message: 'Please enter valid phone number' })
             }
             if (phoneCheck) {
@@ -168,8 +168,8 @@ const updateUser = async (req, res) => {
             const hashedPassword = await bcrypt.hash(data.password, salt);
             data.password = hashedPassword
         }
-        if(req.files){
-            if((req.files).length>0){
+        if (req.files) {
+            if ((req.files).length > 0) {
                 const files = req.files
                 let url = await uploadFiles(files[0])
                 data.profileImage = url

@@ -6,7 +6,12 @@ const router = require('./routes/routes.js')
 const multer = require('multer');
 const cors = require('cors')
 
-app.use(cors())
+app.use(cors({
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
+    origin: '*',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(multer().any());
