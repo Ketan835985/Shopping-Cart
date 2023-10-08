@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const model = require('../models/userModel')
 const { userCreate, userLogin, updateUser, getUserById } = require('../controllers/userCtrl');
 const { auth } = require('../middlewares/auth');
 const { createProduct, getProduct, getProductById, updateProduct, deletedProduct } = require('../controllers/productCtrl')
@@ -38,4 +39,8 @@ router.all("*", function (req, res) {
     res.status(200).send({ status: true, message: "you're on a wrong route" });
   });
 
+
+  // router.get('/endPoint', async(req,res)=>{
+  //   res.send("hello");
+  // })
 module.exports = router;
